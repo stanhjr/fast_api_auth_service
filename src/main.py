@@ -6,7 +6,7 @@ from fastapi import (
     Request,
 )
 from fastapi.responses import StreamingResponse
-from httpx import AsyncClient, Timeout
+from httpx import AsyncClient
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.background import BackgroundTask
 
