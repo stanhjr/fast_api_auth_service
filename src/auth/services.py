@@ -17,9 +17,11 @@ class AuthService:
         timezone = "Europe/Kiev"
         current_date = datetime.datetime.now(pytz.timezone(timezone)).strftime("%Y-%m-%d")
         data = f"{self.device_id}{SECRET_KEY}{current_date}"
+        print(data, "data string")
         hash_obj = hashlib.sha256(data.encode())
         return hash_obj.hexdigest()
 
     def is_authenticate(self) -> bool:
-        print(self.get_hash_token(), "TOKEN")
+        print(SECRET_KEY, "SECRET_KEY")
+        print(self.get_hash_token(), "TOKEN343")
         return self.auth_token == self.get_hash_token()
