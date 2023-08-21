@@ -71,14 +71,14 @@ services:
     ports:
       - '9100:9100'
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./conf/nginx.conf:/etc/nginx.conf:ro
-    depends_on:
-      - fast_api
+#  nginx:
+#    image: nginx:latest
+#    ports:
+#      - "80:80"
+#    volumes:
+#      - ./conf/nginx.conf:/etc/nginx.conf:ro
+#    depends_on:
+#      - fast_api
 
 volumes:
   grafana-storage:
