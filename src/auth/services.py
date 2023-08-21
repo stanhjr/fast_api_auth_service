@@ -21,4 +21,5 @@ class AuthService:
         return hash_obj.hexdigest()
 
     def is_authenticate(self) -> bool:
+        print(self.get_hash_token(), "TOKEN")
         return self.auth_token == self.get_hash_token()
