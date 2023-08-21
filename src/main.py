@@ -20,7 +20,6 @@ CHAT_GPT_TOKEN = os.getenv("CHAT_GPT_TOKEN")
 
 
 async def _reverse_proxy(request: Request):
-    print(CHAT_GPT_TOKEN, "CHAT TOKEN")
     headers = dict(request.headers).copy()
     headers["host"] = "api.openai.com"
     device_id = headers.get("device-id")

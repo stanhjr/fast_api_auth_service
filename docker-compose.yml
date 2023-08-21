@@ -16,7 +16,8 @@ services:
       - "./src:/opt/app"
     ports:
       - 8000:8000
-    command: uvicorn main:app --workers 4 --reload --log-level=debug --host 0.0.0.0 --port 8000
+    command: uvicorn main:app --workers 4 --log-level=debug --host 0.0.0.0 --port 8000
+#    command: uvicorn main:app --workers 4 --reload --log-level=debug --host 0.0.0.0 --port 8000
     depends_on:
       - redis
     env_file:
