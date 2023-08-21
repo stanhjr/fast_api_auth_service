@@ -3,7 +3,9 @@ import os
 from fastapi import (
     HTTPException,
 )
+
 CHAT_GPT_TOKEN = os.getenv("CHAT_GPT_TOKEN")
+
 
 def get_url(type_query: str) -> str:
     type_url = {
