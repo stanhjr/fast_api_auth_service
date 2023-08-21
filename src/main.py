@@ -14,12 +14,9 @@ from auth.services import AuthService
 
 app = FastAPI()
 Instrumentator().instrument(app).expose(app)
-BASE_URL = "https://api.openai.com/v1/chat/completions"
-MODERATION_URL = "https://api.openai.com/v1/moderations"
-GENERATION_URL = "https://api.openai.com/v1/images/generations"
-CHAT_GPT_SERVER = AsyncClient(base_url=BASE_URL)
-CHAT_GPT_TOKEN = os.getenv("CHAT_GPT_TOKEN")
 
+CHAT_GPT_SERVER = AsyncClient()
+CHAT_GPT_TOKEN = os.getenv("CHAT_GPT_TOKEN")
 TYPE_URL = {
     "chat": "https://api.openai.com/v1/chat/completions",
     "moderation": "https://api.openai.com/v1/moderations",
@@ -46,9 +43,8 @@ async def _reverse_proxy(request: Request):
         raise HTTPException(status_code=400, detail="Not device_id or auth_token")
 
     url = get_url(type_query=type_query)
-    auth_service = AuthService(device_id=device_id, auth_token=auth_token)
 
-    if not auth_service.is_authenticate():
+    if not AuthService(device_id=device_id, auth_token=auth_token).is_authenticate():
         raise HTTPException(status_code=401, detail="Unauthorized, token not valid")
 
     headers.pop("device-id")
