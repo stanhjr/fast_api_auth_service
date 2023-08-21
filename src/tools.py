@@ -1,8 +1,6 @@
 import os
 
-from fastapi import (
-    HTTPException,
-)
+from fastapi import HTTPException
 
 CHAT_GPT_TOKEN = os.getenv("CHAT_GPT_TOKEN")
 
