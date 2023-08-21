@@ -4,7 +4,7 @@ import os
 
 import pytz
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY", "6e45c2e49bd4fba518b527c1bcd9c9b127cbaad")
 
 
 class AuthService:
@@ -15,7 +15,7 @@ class AuthService:
 
     def get_hash_token(self) -> str:
         timezone = "Europe/Kiev"
-        current_date = datetime.datetime.now(pytz.timezone(timezone)).strftime("%Y-%m-%d")
+        current_date = datetime.datetime.now(pytz.timezone(timezone)).strftime("%Y-%m-%d-%H-%M")
         data = f"{self.device_id}{SECRET_KEY}{current_date}"
         hash_obj = hashlib.sha256(data.encode())
         return hash_obj.hexdigest()
