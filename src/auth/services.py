@@ -4,7 +4,7 @@ import os
 
 import pytz
 
-SECRET_KEY = os.getenv("SECRET_KEY", "6e45c2e49bd4fba518b527c1bcd9c9b127cbaad")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 
 class AuthService:
