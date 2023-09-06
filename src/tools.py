@@ -6,7 +6,6 @@ from fastapi.encoders import jsonable_encoder
 
 from schemas.headers import HeadersModel
 
-CHAT_GPT_TOKEN = os.getenv("CHAT_GPT_TOKEN")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
