@@ -63,7 +63,7 @@ async def add_statistics_chat(
     headers = dict(request.headers).copy()
     headers_service = HeadersService(headers=headers)
     if not headers_service.is_valid_statistics():
-        raise HTTPException(status_code=400, detail="Not device_id or auth_token")
+        raise HTTPException(status_code=400, detail="Not auth_token")
     if not AuthService(
             device_id=headers_service.get_device_id(),
             auth_token=headers_service.get_auth_token()
