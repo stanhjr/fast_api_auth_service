@@ -10,7 +10,7 @@ class TypeQueryEnum(str, Enum):
 
 
 class TypeModelEnum(str, Enum):
-    gpt_3 = "gpt-3.5-turbo-3"
+    gpt_3 = "gpt-3.5-turbo"
     gpt_4 = "gpt-4"
 
 
