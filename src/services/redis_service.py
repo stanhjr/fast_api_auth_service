@@ -38,9 +38,9 @@ class RedisService:
                 return int(tokens)
             return None
 
-    async def set_tokens_by_device_id(self, device_id: str, tokens: int, app_name: str) -> int:
+    async def set_tokens_by_device_id(self, device_id: str, tokens: int, app_name: str, type_model: str) -> int:
         async with self.redis.client() as conn:
-            key = f"{app_name}_{device_id}"
+            key = f"{app_name}_{device_id}_{type_model}"
             current_tokens = await self._get_tokens_by_device_id(key)
             if not current_tokens:
                 await conn.set(key, tokens)
@@ -53,7 +53,7 @@ class RedisService:
             return current_tokens
 
     async def limit_tokens_exceeded_validation(self, device_id: str, type_model: str, app_name: str) -> bool:
-        key = f"{app_name}_{device_id}"
+        key = f"{app_name}_{device_id}_{type_model}"
         tokens_by_device_id = await self._get_tokens_by_device_id(key)
         if not tokens_by_device_id:
             return True

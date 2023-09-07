@@ -18,7 +18,7 @@ class HeadersModel(BaseModel):
     device_id: str
     authorization: str
     type_query: TypeQueryEnum
-    type_model: TypeModelEnum | None
+    type_model: TypeModelEnum
     app_name: str
 
 
