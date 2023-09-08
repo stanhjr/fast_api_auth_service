@@ -1,9 +1,11 @@
+import json
+
 from fastapi import (
     FastAPI,
     HTTPException,
     Request,
 )
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from httpx import AsyncClient
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.background import BackgroundTask
@@ -29,33 +31,38 @@ async def _reverse_proxy(request: Request):
     headers_service = HeadersService(headers=headers)
     if not headers_service.is_valid():
         raise HTTPException(status_code=400, detail="Not device_id or auth_token")
-    if not AuthService(
-            device_id=headers_service.get_device_id(),
-            auth_token=headers_service.get_auth_token()
-    ).is_authenticate():
-        raise HTTPException(status_code=401, detail="Unauthorized, token not valid")
+    # if not AuthService(
+    #         device_id=headers_service.get_device_id(),
+    #         auth_token=headers_service.get_auth_token()
+    # ).is_authenticate():
+    #     raise HTTPException(status_code=401, detail="Unauthorized, token not valid")
     url = get_url(type_query=headers_service.get_type_query())
     redis_service = RedisService()
     await redis_service.limit_tokens_exceeded_validation(device_id=headers_service.get_device_id(),
                                                          app_name=headers_service.get_app_name(),
                                                          type_model=headers_service.get_type_model())
-    valid_api_key = await redis_service.get_valid_api_key()
-    headers_service.set_api_key(valid_api_key=valid_api_key)
-    headers = headers_service.get_modify_headers()
-    rp_req = CHAT_GPT_SERVER.build_request(
-        request.method, url, headers=headers, content=await request.body(), timeout=None
-    )
-    rp_resp = await CHAT_GPT_SERVER.send(rp_req, stream=True)
+    attempts_numbers = await redis_service.get_attempts_number()
+    body = await request.body()
+    for attempt in range(attempts_numbers):
+        valid_api_key = await redis_service.get_valid_api_key()
+        headers_service.set_api_key(valid_api_key=valid_api_key)
+        headers = headers_service.get_modify_headers()
+        rp_req = CHAT_GPT_SERVER.build_request(
+            request.method, url, headers=headers, content=body, timeout=None
+        )
 
-    if rp_resp.status_code == 401:
-        await redis_service.set_expired_api_key(expired_api_key=headers_service.valid_api_key)
+        rp_resp = await CHAT_GPT_SERVER.send(rp_req, stream=True)
+        if rp_resp.status_code == 401:
+            await redis_service.set_expired_api_key(expired_api_key=headers_service.valid_api_key)
+            continue
 
-    return StreamingResponse(
-        rp_resp.aiter_raw(),
-        status_code=rp_resp.status_code,
-        headers=rp_resp.headers,
-        background=BackgroundTask(rp_resp.aclose),
-    )
+        return StreamingResponse(
+            rp_resp.aiter_raw(),
+            status_code=rp_resp.status_code,
+            headers=rp_resp.headers,
+            background=BackgroundTask(rp_resp.aclose),
+        )
+    return Response(json.dumps({"message": "all tokens expired"}), status_code=403)
 
 
 @app.post("/api/statistics_data/chat/")

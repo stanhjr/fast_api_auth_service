@@ -31,6 +31,10 @@ class RedisService:
             password=REDIS_PASSWORD
         )
 
+    @staticmethod
+    async def get_attempts_number() -> int:
+        return len(CHAT_GPT_API_KEY_LIST)
+
     async def _get_tokens_by_device_id(self, key: str):
         async with self.redis.client() as conn:
             tokens = await conn.get(key)
