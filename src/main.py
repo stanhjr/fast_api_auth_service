@@ -12,8 +12,11 @@ from auth.services import AuthService
 from schemas.statistics import StatisticsData
 from services.redis_service import RedisService
 from services.user_statistics import UserStatisticService
-
-from tools import HeadersService, get_url, get_num_tokens_from_list
+from tools import (
+    HeadersService,
+    get_num_tokens_from_list,
+    get_url,
+)
 
 app = FastAPI()
 Instrumentator().instrument(app).expose(app)
@@ -76,7 +79,8 @@ async def add_statistics_chat(
         device_id=data.device_id,
         app_name=data.app_name,
         tokens=tokens,
-        type_query=data.type_model
+        type_query=data.type_model,
+        chat_model=data.chat_model
     )
     redis_service = RedisService()
     await redis_service.set_tokens_by_device_id(device_id=data.device_id,

@@ -1,7 +1,7 @@
 import ast
 import json
-from io import BytesIO
 import re
+from io import BytesIO
 
 import brotli
 from fastapi import (
@@ -10,17 +10,17 @@ from fastapi import (
     Request,
 )
 from httpx import AsyncClient
-
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.background import BackgroundTask
 from starlette.responses import StreamingResponse
 
 from services.redis_service import RedisService
-
 from tools import (
     HeadersService,
     get_stream_response,
-    get_url, num_tokens_from_string, num_tokens_from_messages,
+    get_url,
+    num_tokens_from_messages,
+    num_tokens_from_string,
 )
 
 app = FastAPI()

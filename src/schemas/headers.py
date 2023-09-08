@@ -25,4 +25,3 @@ class HeadersModel(BaseModel):
 class HeadersStatisticsModel(BaseModel):
     authorization: str
     device_id: str
-

@@ -7,4 +7,5 @@ class StatisticsData(BaseModel):
     device_id: str
     app_name: str
     word_list: list[str]
-    type_model: TypeModelEnum
+    chat_model: str
+    type_que: TypeModelEnum
