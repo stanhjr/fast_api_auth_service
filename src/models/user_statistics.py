@@ -11,7 +11,7 @@ class UserStatistic(Base):
     type_query: Mapped[str] = mapped_column()
     tokens: Mapped[int | None]
     type: Mapped[Type] = mapped_column(default=Type.outgoing)
-    chat_model = Mapped[int]
+    chat_model: Mapped[str]
 
     def __str__(self):
         return f"User {self.device_id}"
