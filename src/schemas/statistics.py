@@ -8,4 +8,4 @@ class StatisticsData(BaseModel):
     app_name: str
     word_list: list[str]
     chat_model: str
-    type_que: TypeModelEnum
+    type_query: TypeModelEnum

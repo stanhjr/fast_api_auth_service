@@ -72,14 +72,14 @@ async def add_statistics_chat(
             auth_token=headers_service.get_auth_token()
     ).is_authenticate():
         raise HTTPException(status_code=401, detail="Unauthorized, token not valid")
-    word_list = data.word_list
-    tokens = get_num_tokens_from_list(word_list=word_list)
+
+    tokens = get_num_tokens_from_list(word_list=data.word_list)
     statistics_service = UserStatisticService()
     await statistics_service.add_outgoing(
         device_id=data.device_id,
         app_name=data.app_name,
         tokens=tokens,
-        type_query=data.type_model,
+        type_query=data.type_query,
         chat_model=data.chat_model
     )
     redis_service = RedisService()
