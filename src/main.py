@@ -93,11 +93,11 @@ async def add_statistics_chat(
     await redis_service.set_tokens_by_device_id(device_id=data.device_id,
                                                 app_name=data.app_name,
                                                 tokens=tokens,
-                                                type_model=data.type_model,
+                                                type_model=data.chat_model,
                                                 )
 
     return {
         "tokens": tokens,
         "device_id": data.device_id,
-        "type_model": data.type_model
+        "type_model": data.chat_model
     }
