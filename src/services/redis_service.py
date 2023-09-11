@@ -3,7 +3,7 @@ import os
 import aioredis
 from fastapi import HTTPException
 
-from schemas.headers import TypeModelEnum
+from schemas.headers import TypeModelEnum, TypeQueryEnum
 from tools import send_telegram_alert
 
 REDIS_HOST = os.getenv("REDIS_HOST")
@@ -56,7 +56,15 @@ class RedisService:
             await conn.expire(key, current_ttl)
             return current_tokens
 
-    async def limit_tokens_exceeded_validation(self, device_id: str, type_model: str, app_name: str) -> bool:
+    async def limit_tokens_exceeded_validation(
+            self,
+            device_id: str,
+            type_model: str,
+            app_name: str,
+            type_query: str
+    ) -> bool:
+        if type_query != TypeQueryEnum.chat:
+            return True
         key = f"{app_name}_{device_id}_{type_model}"
         tokens_by_device_id = await self._get_tokens_by_device_id(key)
         if not tokens_by_device_id:
