@@ -34,16 +34,17 @@ async def _reverse_proxy(request: Request):
     headers_service = HeadersService(headers=headers)
     if not headers_service.is_valid():
         raise HTTPException(status_code=400, detail="Not device_id or auth_token")
-    # if not AuthService(
-    #         device_id=headers_service.get_device_id(),
-    #         auth_token=headers_service.get_auth_token()
-    # ).is_authenticate():
-    #     raise HTTPException(status_code=401, detail="Unauthorized, token not valid")
+    if not AuthService(
+            device_id=headers_service.get_device_id(),
+            auth_token=headers_service.get_auth_token()
+    ).is_authenticate():
+        raise HTTPException(status_code=401, detail="Unauthorized, token not valid")
     url = get_url(type_query=headers_service.get_type_query())
     redis_service = RedisService()
     await redis_service.limit_tokens_exceeded_validation(device_id=headers_service.get_device_id(),
                                                          app_name=headers_service.get_app_name(),
-                                                         type_model=headers_service.get_type_model())
+                                                         type_model=headers_service.get_type_model(),
+                                                         type_query=headers_service.get_type_query())
     attempts_numbers = await redis_service.get_attempts_number()
     body = await request.body()
     for attempt in range(attempts_numbers):
