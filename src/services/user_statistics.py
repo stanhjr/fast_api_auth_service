@@ -6,6 +6,7 @@ class UserStatisticService:
         self.repo: UserStatisticRepository = UserStatisticRepository()
 
     async def add_outgoing(self, device_id: str, app_name: str, tokens: int, type_query: str, chat_model: str):
+        print("add record")
         record_id = await self.repo.add_one(
             device_id=device_id,
             app_name=app_name,

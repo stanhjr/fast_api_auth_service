@@ -94,7 +94,7 @@ async def _reverse_proxy(request: Request):
         if rp_resp.status_code == 401:
             await redis_service.set_expired_api_key(expired_api_key=headers_service.valid_api_key)
             continue
-
+        print("type_query", headers_service.get_type_query(), TypeQueryEnum.chat)
         if not headers_service.get_type_query() == TypeQueryEnum.chat:
             return StreamingResponse(
                 rp_resp.aiter_raw(),
@@ -118,13 +118,14 @@ async def _reverse_proxy(request: Request):
                 print(e)
 
         statistics_service = UserStatisticService()
-        await statistics_service.add_outgoing(
+        record_id = await statistics_service.add_outgoing(
             device_id=headers_service.get_device_id(),
             app_name=headers_service.get_app_name(),
             tokens=result_tokens,
             type_query=headers_service.get_type_query(),
             chat_model=headers_service.get_type_model()
         )
+        print(record_id, "record_id")
         redis_service = RedisService()
         await redis_service.set_tokens_by_device_id(device_id=headers_service.get_device_id(),
                                                     app_name=headers_service.get_app_name(),
