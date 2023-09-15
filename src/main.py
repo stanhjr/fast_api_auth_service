@@ -8,7 +8,7 @@ from fastapi import (
     HTTPException,
     Request,
 )
-from fastapi.responses import StreamingResponse, Response
+from fastapi.responses import Response, StreamingResponse
 from httpx import AsyncClient
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.background import BackgroundTask
@@ -21,7 +21,8 @@ from services.user_statistics import UserStatisticService
 from tools import (
     HeadersService,
     get_num_tokens_from_list,
-    get_url, num_tokens_from_string,
+    get_url,
+    num_tokens_from_string,
 )
 
 app = FastAPI()
@@ -33,7 +34,7 @@ async def _reverse_proxy_deprecated(request: Request):
     headers = dict(request.headers).copy()
     headers_service = HeadersService(headers=headers)
 
-    if not headers_service.is_valid():
+    if not headers_service.is_old_valid():
         raise HTTPException(status_code=400, detail="Not device_id or auth_token")
 
     if not AuthService(

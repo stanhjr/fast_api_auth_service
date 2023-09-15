@@ -9,7 +9,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.background import BackgroundTask
 
 from auth.services import AuthService
-from tools import get_url, HeadersService
+from tools import HeadersService, get_url
 
 app = FastAPI()
 Instrumentator().instrument(app).expose(app)

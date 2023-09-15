@@ -4,7 +4,11 @@ import aiohttp
 import tiktoken
 from fastapi import HTTPException
 
-from schemas.headers import HeadersModel, HeadersStatisticsModel
+from schemas.headers import (
+    HeadersModel,
+    HeadersStatisticsModel,
+    OldHeadersModel,
+)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
@@ -70,6 +74,20 @@ class HeadersService:
                 device_id=self.headers.get("device-id"),
                 authorization=self.headers.get("authorization"),
                 app_name=self.headers.get("app-name"),
+                type_query=self.headers.get("type-query"),
+            )
+        except ValueError as e:
+            print(e)
+            return False
+        return True
+
+    def is_old_valid(self) -> bool:
+        try:
+            OldHeadersModel(
+                device_id=self.headers.get("device-id"),
+                authorization=self.headers.get("authorization"),
+                app_name=self.headers.get("app-name"),
+                type_model=self.headers.get("type-model"),
                 type_query=self.headers.get("type-query"),
             )
         except ValueError as e:

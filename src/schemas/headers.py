@@ -22,6 +22,12 @@ class HeadersModel(BaseModel):
     app_name: str
 
 
+class OldHeadersModel(BaseModel):
+    device_id: str
+    authorization: str
+    type_query: TypeQueryEnum
+
+
 class HeadersStatisticsModel(BaseModel):
     authorization: str
     device_id: str
