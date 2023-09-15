@@ -2,6 +2,27 @@ version: '3'
 
 services:
 
+  fast_api_v2:
+    container_name: "fast_api_v2"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - "./src:/opt/app"
+    ports:
+      - 7000:7000
+    command: "sh -c 'alembic upgrade head && uvicorn main:app --workers 3 --host 0.0.0.0 --port 7000'"
+#    command: "sh -c 'alembic upgrade head && uvicorn main:app --reload --workers 3 --host 0.0.0.0 --port 7000'"
+    depends_on:
+      - redis
+    env_file:
+      - .env
+
   fast_api:
     container_name: "fast_api"
     logging:
@@ -17,8 +38,8 @@ services:
     ports:
       - 8000:8000
 #    command: "sh -c 'alembic revision --autogenerate -m \"add column\" && alembic upgrade head && uvicorn main:app --reload --workers 3 --host 0.0.0.0 --port 8000'"
-    command: "sh -c 'alembic upgrade head && uvicorn main:app --workers 3 --host 0.0.0.0 --port 8000'"
-#   command: "sh -c 'alembic upgrade head && uvicorn main:app --reload --workers 3 --host 0.0.0.0 --port 8000'"
+#    command: "sh -c 'alembic upgrade head && uvicorn main:app --workers 3 --host 0.0.0.0 --port 8000'"
+    command: "sh -c 'alembic upgrade head && uvicorn main_old:app --reload --workers 3 --host 0.0.0.0 --port 8000'"
     depends_on:
       - redis
     env_file:

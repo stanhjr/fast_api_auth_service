@@ -1,3 +1,5 @@
+import os
+
 from fastapi import (
     FastAPI,
     HTTPException,
@@ -17,11 +19,11 @@ Instrumentator().instrument(app).expose(app)
 CHAT_GPT_SERVER = AsyncClient()
 
 
-async def _reverse_proxy(request: Request):
+async def _reverse_proxy_deprecated(request: Request):
     headers = dict(request.headers).copy()
     headers_service = HeadersService(headers=headers)
 
-    if not headers_service.is_valid():
+    if not headers_service.is_old_valid():
         raise HTTPException(status_code=400, detail="Not device_id or auth_token")
 
     if not AuthService(
@@ -32,6 +34,7 @@ async def _reverse_proxy(request: Request):
 
     url = get_url(type_query=headers_service.get_type_query())
     headers = headers_service.get_modify_headers()
+    headers["Authorization"] = f"Bearer {os.getenv('CHAT_GPT_TOKEN')}"
     rp_req = CHAT_GPT_SERVER.build_request(
         request.method, url, headers=headers, content=await request.body(), timeout=None
     )
@@ -44,3 +47,6 @@ async def _reverse_proxy(request: Request):
         headers=rp_resp.headers,
         background=BackgroundTask(rp_resp.aclose),
     )
+
+
+app.add_route("/{path:path}", _reverse_proxy_deprecated, ["GET", "POST"])
