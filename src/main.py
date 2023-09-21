@@ -68,37 +68,37 @@ async def _reverse_proxy(request: Request):
                 background=BackgroundTask(rp_resp.aclose),
             )
 
-        response_content = b""
-        result_tokens = 0
-        async for chunk in rp_resp.aiter_raw():
-            response_content += chunk
-            try:
-                json_string = chunk.decode('utf-8')
-                match = re.search(r'"content":"(.*?)"', json_string)
-                if match:
-                    content_string = match.group(1)
-                    result_tokens += num_tokens_from_string(string=content_string)
+        async def generate():
+            response_content = b""
+            result_tokens = 0
+            async for chunk in rp_resp.aiter_raw():
+                response_content += chunk
+                try:
+                    json_string = chunk.decode('utf-8')
+                    match = re.search(r'"content":"(.*?)"', json_string)
+                    if match:
+                        content_string = match.group(1)
+                        result_tokens += num_tokens_from_string(string=content_string)
 
-            except Exception as e:
-                print(e)
-
-        statistics_service = UserStatisticService()
-        await statistics_service.add_outgoing(
-            device_id=headers_service.get_device_id(),
-            app_name=headers_service.get_app_name(),
-            tokens=result_tokens,
-            type_query=headers_service.get_type_query(),
-            chat_model=headers_service.get_type_model()
-        )
-        redis_service = RedisService()
-        await redis_service.set_tokens_by_device_id(device_id=headers_service.get_device_id(),
-                                                    app_name=headers_service.get_app_name(),
-                                                    tokens=result_tokens,
-                                                    type_model=headers_service.get_type_model(),
-                                                    )
+                except Exception as e:
+                    print(e)
+                yield chunk
+            statistics_service = UserStatisticService()
+            await statistics_service.add_outgoing(
+                device_id=headers_service.get_device_id(),
+                app_name=headers_service.get_app_name(),
+                tokens=result_tokens,
+                type_query=headers_service.get_type_query(),
+                chat_model=headers_service.get_type_model()
+            )
+            await redis_service.set_tokens_by_device_id(device_id=headers_service.get_device_id(),
+                                                        app_name=headers_service.get_app_name(),
+                                                        tokens=result_tokens,
+                                                        type_model=headers_service.get_type_model(),
+                                                        )
 
         return StreamingResponse(
-            BytesIO(response_content),
+            generate(),
             status_code=rp_resp.status_code,
             headers=rp_resp.headers,
             background=BackgroundTask(rp_resp.aclose),
