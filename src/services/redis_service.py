@@ -71,9 +71,9 @@ class RedisService:
             return True
 
         if type_model == TypeModelEnum.gpt_3 and tokens_by_device_id > self.LIMIT_TOKENS_3:
-            raise HTTPException(status_code=400, detail="Chat GPT-3.5, tokens limit exceeded")
+            raise HTTPException(status_code=400, detail={"message": "Chat GPT-3.5, tokens limit exceeded", "code": 5})
         if type_model == TypeModelEnum.gpt_4 and tokens_by_device_id > self.LIMIT_TOKENS_4:
-            raise HTTPException(status_code=400, detail="Chat GPT-4, tokens limit exceeded")
+            raise HTTPException(status_code=400, detail={"message": "Chat GPT-4, tokens limit exceeded", "code": 6})
 
         return True
 
@@ -95,5 +95,5 @@ class RedisService:
         result_set = self.CHAT_GPT_API_KEY_SET - expired_token_set
 
         if not result_set:
-            raise HTTPException(status_code=400, detail="Not Valid APi keys!")
+            raise HTTPException(status_code=400, detail={"message": "Not Valid APi keys!", "code": 7})
         return list(result_set)[0]

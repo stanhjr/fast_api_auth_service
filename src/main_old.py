@@ -24,13 +24,13 @@ async def _reverse_proxy_deprecated(request: Request):
     headers_service = HeadersService(headers=headers)
 
     if not headers_service.is_old_valid():
-        raise HTTPException(status_code=400, detail="Not device_id or auth_token")
+        raise HTTPException(status_code=401, detail={"message": "Not device_id or auth_token", "code": 0})
 
     if not AuthService(
             device_id=headers_service.get_device_id(),
             auth_token=headers_service.get_auth_token()
     ).is_authenticate():
-        raise HTTPException(status_code=401, detail="Unauthorized, token not valid")
+        raise HTTPException(status_code=401, detail={"message": "Unauthorized, token not valid", "code": 1})
 
     url = get_url(type_query=headers_service.get_type_query())
     headers = headers_service.get_modify_headers()

@@ -56,7 +56,7 @@ def get_url(type_query: str) -> str:
     }
     url = type_url.get(type_query)
     if url is None:
-        raise HTTPException(status_code=400, detail="Not valid type query")
+        raise HTTPException(status_code=403, detail={"message": "Not valid type query", "code": 2})
 
     return url
 

@@ -7,7 +7,7 @@ from fastapi import (
     HTTPException,
     Request,
 )
-from fastapi.responses import Response, StreamingResponse
+from fastapi.responses import StreamingResponse
 from httpx import AsyncClient
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.background import BackgroundTask
@@ -33,12 +33,12 @@ async def _reverse_proxy(request: Request):
     headers = dict(request.headers).copy()
     headers_service = HeadersService(headers=headers)
     if not headers_service.is_valid():
-        raise HTTPException(status_code=400, detail="Not device_id or auth_token")
+        raise HTTPException(status_code=401, detail={"message": "Not device_id or auth_token", "code": 0})
     if not AuthService(
             device_id=headers_service.get_device_id(),
             auth_token=headers_service.get_auth_token()
     ).is_authenticate():
-        raise HTTPException(status_code=401, detail="Unauthorized, token not valid")
+        raise HTTPException(status_code=401, detail={"message": "Unauthorized, token not valid", "code": 1})
     url = get_url(type_query=headers_service.get_type_query())
     redis_service = RedisService()
     await redis_service.limit_tokens_exceeded_validation(device_id=headers_service.get_device_id(),
@@ -103,4 +103,4 @@ async def _reverse_proxy(request: Request):
             headers=rp_resp.headers,
             background=BackgroundTask(rp_resp.aclose),
         )
-    return Response(json.dumps({"message": "all tokens expired"}), status_code=403)
+    raise HTTPException(status_code=403, detail={"message": "all tokens expired", "code": 9})
