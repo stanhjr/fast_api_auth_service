@@ -20,6 +20,7 @@ class HeadersModel(BaseModel):
     type_query: TypeQueryEnum
     type_model: TypeModelEnum
     app_name: str
+    bandl_id: str | None
 
 
 class OldHeadersModel(BaseModel):

@@ -13,26 +13,12 @@ from schemas.headers import (
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-CHAT_GPT_API_KEY_LIST: list = os.getenv("CHAT_GPT_API_KEY_LIST", "").split(",")
-
 
 def num_tokens_from_string(string: str, encoding_name: str = "cl100k_base") -> int:
     """Returns the number of tokens in a text string."""
     encoding = tiktoken.get_encoding(encoding_name)
     num_tokens = len(encoding.encode(string))
     return num_tokens
-
-
-def get_num_tokens_from_list(word_list: list, encoding_name: str = "cl100k_base") -> int:
-    """Returns the number of tokens in a list text string."""
-    tokens_number = 0
-    for word in word_list:
-        try:
-            encoding = tiktoken.get_encoding(encoding_name)
-            tokens_number += len(encoding.encode(word))
-        except Exception as e:
-            print(e)
-    return tokens_number
 
 
 async def send_telegram_alert(text: str):
@@ -76,8 +62,7 @@ class HeadersService:
                 app_name=self.headers.get("app-name"),
                 type_query=self.headers.get("type-query"),
             )
-        except ValueError as e:
-            print(e)
+        except ValueError:
             return False
         return True
 
@@ -90,8 +75,7 @@ class HeadersService:
                 type_model=self.headers.get("type-model"),
                 type_query=self.headers.get("type-query"),
             )
-        except ValueError as e:
-            print(e)
+        except ValueError:
             return False
         return True
 
@@ -103,9 +87,9 @@ class HeadersService:
                 app_name=self.headers.get("app-name"),
                 type_model=self.headers.get("type-model"),
                 type_query=self.headers.get("type-query"),
+                bandl_id=self.headers.get("bandl-id"),
             )
         except ValueError as e:
-            print(e)
             return False
         return True
 
@@ -116,6 +100,7 @@ class HeadersService:
         self.modify_headers.pop("type-model", None)
         self.modify_headers.pop("authorization", None)
         self.modify_headers.pop("app-name", None)
+        self.modify_headers.pop("bandl-id", None)
         return self.modify_headers
 
     def set_api_key(self, valid_api_key: str):
@@ -124,6 +109,9 @@ class HeadersService:
 
     def get_device_id(self) -> str:
         return self.headers.get("device-id")
+
+    def get_bandl_id(self) -> str:
+        return self.headers.get("bandl-id")
 
     def get_app_name(self) -> str:
         return self.headers.get("app-name")

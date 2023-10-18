@@ -6,34 +6,31 @@ from fastapi import HTTPException
 from schemas.headers import TypeModelEnum, TypeQueryEnum
 from tools import send_telegram_alert
 
-REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
-LIMIT_TOKENS_3 = int(os.getenv("LIMIT_TOKENS_3"))
-LIMIT_TOKENS_4 = int(os.getenv("LIMIT_TOKENS_4"))
-BASE_TTL_SECONDS = int(os.getenv("BASE_TTL_SECONDS"))
-CHAT_GPT_API_KEY_LIST = os.getenv("CHAT_GPT_API_KEY_LIST").split(",")
-
 
 class RedisService:
-    REDIS_HOST = REDIS_HOST
-    REDIS_PASSWORD = REDIS_HOST
-    LIMIT_TOKENS_3 = LIMIT_TOKENS_3
-    LIMIT_TOKENS_4 = LIMIT_TOKENS_4
+    REDIS_HOST = os.getenv("REDIS_HOST")
+    REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+    LIMIT_TOKENS_3 = int(os.getenv("LIMIT_TOKENS_3"))
+    LIMIT_TOKENS_4 = int(os.getenv("LIMIT_TOKENS_4"))
+    BASE_TTL_SECONDS = int(os.getenv("BASE_TTL_SECONDS"))
     EXPIRED_API_KEY_SET_NAME = "expired_api_key_set"
-    CHAT_GPT_API_KEY_SET = set(CHAT_GPT_API_KEY_LIST)
-    BASE_TTL_SECONDS = BASE_TTL_SECONDS
+    KASPER_API_KEY = os.getenv("KASPER_API_KEY", "")
+    PROMPTS_API_KEY = os.getenv("PROMPTS_API_KEY", "")
+    PIC_ANSWER_API_KEY = os.getenv("PIC_ANSWER_API_KEY", "")
+    CHAT_GPT_MAIN_API_KEYS = set(os.getenv("CHAT_GPT_MAIN_API_KEYS").split(","))
 
     def __init__(self):
         self.redis = aioredis.from_url(
-            f"redis://{REDIS_HOST}",
+            f"redis://{self.REDIS_HOST}",
             encoding="utf-8",
             decode_responses=True,
-            password=REDIS_PASSWORD
+            password=self.REDIS_PASSWORD
         )
 
-    @staticmethod
-    async def get_attempts_number() -> int:
-        return len(CHAT_GPT_API_KEY_LIST)
+    async def get_attempts_number(self, bandl_id: str | None) -> int:
+        if bandl_id is None:
+            return len(self.CHAT_GPT_MAIN_API_KEYS)
+        return len(self.CHAT_GPT_MAIN_API_KEYS) + 1
 
     async def _get_tokens_by_device_id(self, key: str):
         async with self.redis.client() as conn:
@@ -77,9 +74,12 @@ class RedisService:
 
         return True
 
-    async def set_expired_api_key(self, expired_api_key: str):
+    async def set_expired_api_key(self, expired_api_key: str, app_name: str):
         async with self.redis.client() as conn:
-            await send_telegram_alert(text=f"ATTENTION THIS API KEY EXPIRED {expired_api_key}")
+            print(f"ATTENTION THIS API KEY EXPIRED {expired_api_key}, APP_NAME -> {app_name}")
+            # await send_telegram_alert(
+            #     text=f"ATTENTION THIS API KEY EXPIRED {expired_api_key}, APP_NAME -> {app_name}"
+            # )
             res = await conn.sadd(self.EXPIRED_API_KEY_SET_NAME, expired_api_key)
             return res
 
@@ -90,9 +90,19 @@ class RedisService:
                 return set()
             return expired_set
 
-    async def get_valid_api_key(self) -> str:
+    async def get_valid_api_key(self, bandl_id: str | None) -> str:
+        api_key_set_strategy = {
+            "casper.app.com": self.KASPER_API_KEY,
+            "com.prompt.promptAI": self.PROMPTS_API_KEY,
+            "com.aiChat.picAnswerAI": self.PIC_ANSWER_API_KEY,
+        }
+
         expired_token_set = await self._get_expired_api_key_set()
-        result_set = self.CHAT_GPT_API_KEY_SET - expired_token_set
+        app_api_key = api_key_set_strategy.get(bandl_id)
+        if app_api_key is not None and app_api_key not in expired_token_set:
+            return app_api_key
+
+        result_set = self.CHAT_GPT_MAIN_API_KEYS - expired_token_set
 
         if not result_set:
             raise HTTPException(status_code=400, detail={"message": "Not Valid APi keys!", "code": 7})

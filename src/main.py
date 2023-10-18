@@ -1,6 +1,4 @@
-import json
 import re
-from io import BytesIO
 
 from fastapi import (
     FastAPI,
@@ -18,7 +16,6 @@ from services.redis_service import RedisService
 from services.user_statistics import UserStatisticService
 from tools import (
     HeadersService,
-    get_num_tokens_from_list,
     get_url,
     num_tokens_from_string,
 )
@@ -32,23 +29,25 @@ CHAT_GPT_SERVER = AsyncClient()
 async def _reverse_proxy(request: Request):
     headers = dict(request.headers).copy()
     headers_service = HeadersService(headers=headers)
+    print(1)
     if not headers_service.is_valid():
         raise HTTPException(status_code=401, detail={"message": "Not device_id or auth_token", "code": 0})
-    if not AuthService(
-            device_id=headers_service.get_device_id(),
-            auth_token=headers_service.get_auth_token()
-    ).is_authenticate():
-        raise HTTPException(status_code=401, detail={"message": "Unauthorized, token not valid", "code": 1})
+    # if not AuthService(
+    #         device_id=headers_service.get_device_id(),
+    #         auth_token=headers_service.get_auth_token()
+    # ).is_authenticate():
+    #     raise HTTPException(status_code=401, detail={"message": "Unauthorized, token not valid", "code": 1})
     url = get_url(type_query=headers_service.get_type_query())
     redis_service = RedisService()
     await redis_service.limit_tokens_exceeded_validation(device_id=headers_service.get_device_id(),
                                                          app_name=headers_service.get_app_name(),
                                                          type_model=headers_service.get_type_model(),
                                                          type_query=headers_service.get_type_query())
-    attempts_numbers = await redis_service.get_attempts_number()
+    bandl_id = headers_service.get_bandl_id()
+    attempts_numbers = await redis_service.get_attempts_number(bandl_id=bandl_id)
     body = await request.body()
     for attempt in range(attempts_numbers):
-        valid_api_key = await redis_service.get_valid_api_key()
+        valid_api_key = await redis_service.get_valid_api_key(bandl_id=bandl_id)
         headers_service.set_api_key(valid_api_key=valid_api_key)
         headers = headers_service.get_modify_headers()
         rp_req = CHAT_GPT_SERVER.build_request(
@@ -57,7 +56,10 @@ async def _reverse_proxy(request: Request):
 
         rp_resp = await CHAT_GPT_SERVER.send(rp_req, stream=True)
         if rp_resp.status_code == 401:
-            await redis_service.set_expired_api_key(expired_api_key=headers_service.valid_api_key)
+            await redis_service.set_expired_api_key(
+                expired_api_key=headers_service.valid_api_key,
+                app_name=headers_service.get_app_name(),
+            )
             continue
 
         if not headers_service.get_type_query() == TypeQueryEnum.chat:
