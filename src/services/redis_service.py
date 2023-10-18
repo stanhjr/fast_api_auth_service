@@ -76,10 +76,9 @@ class RedisService:
 
     async def set_expired_api_key(self, expired_api_key: str, app_name: str):
         async with self.redis.client() as conn:
-            print(f"ATTENTION THIS API KEY EXPIRED {expired_api_key}, APP_NAME -> {app_name}")
-            # await send_telegram_alert(
-            #     text=f"ATTENTION THIS API KEY EXPIRED {expired_api_key}, APP_NAME -> {app_name}"
-            # )
+            await send_telegram_alert(
+                text=f"ATTENTION THIS API KEY EXPIRED {expired_api_key}, APP_NAME -> {app_name}"
+            )
             res = await conn.sadd(self.EXPIRED_API_KEY_SET_NAME, expired_api_key)
             return res
 

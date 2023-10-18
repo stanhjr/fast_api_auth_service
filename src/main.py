@@ -29,14 +29,13 @@ CHAT_GPT_SERVER = AsyncClient()
 async def _reverse_proxy(request: Request):
     headers = dict(request.headers).copy()
     headers_service = HeadersService(headers=headers)
-    print(1)
     if not headers_service.is_valid():
         raise HTTPException(status_code=401, detail={"message": "Not device_id or auth_token", "code": 0})
-    # if not AuthService(
-    #         device_id=headers_service.get_device_id(),
-    #         auth_token=headers_service.get_auth_token()
-    # ).is_authenticate():
-    #     raise HTTPException(status_code=401, detail={"message": "Unauthorized, token not valid", "code": 1})
+    if not AuthService(
+            device_id=headers_service.get_device_id(),
+            auth_token=headers_service.get_auth_token()
+    ).is_authenticate():
+        raise HTTPException(status_code=401, detail={"message": "Unauthorized, token not valid", "code": 1})
     url = get_url(type_query=headers_service.get_type_query())
     redis_service = RedisService()
     await redis_service.limit_tokens_exceeded_validation(device_id=headers_service.get_device_id(),
