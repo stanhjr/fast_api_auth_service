@@ -3,6 +3,7 @@ import os
 import aiohttp
 import tiktoken
 from fastapi import HTTPException
+from fastapi.encoders import jsonable_encoder
 
 from schemas.headers import (
     HeadersModel,
@@ -132,3 +133,9 @@ class CustomResponse:
         self.headers = headers
         self.content = content
         self.status_code = status_code
+
+    def get_tokens_number(self) -> int:
+        try:
+            return int(self.content["usage"]["total_tokens"])
+        except Exception:
+            return 0
