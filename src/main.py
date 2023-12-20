@@ -33,13 +33,13 @@ CHAT_GPT_SERVER = AsyncClient()
 async def get_and_validate_headers_service(request: Request) -> HeadersService:
     headers = dict(request.headers).copy()
     headers_service = HeadersService(headers=headers)
-    # if not headers_service.is_valid():
-    #     raise HTTPException(status_code=401, detail={"message": "Not device_id or auth_token", "code": 0})
-    # if not AuthService(
-    #         device_id=headers_service.get_device_id(),
-    #         auth_token=headers_service.get_auth_token()
-    # ).is_authenticate():
-    #     raise HTTPException(status_code=401, detail={"message": "Unauthorized, token not valid", "code": 1})
+    if not headers_service.is_valid():
+        raise HTTPException(status_code=401, detail={"message": "Not device_id or auth_token", "code": 0})
+    if not AuthService(
+            device_id=headers_service.get_device_id(),
+            auth_token=headers_service.get_auth_token()
+    ).is_authenticate():
+        raise HTTPException(status_code=401, detail={"message": "Unauthorized, token not valid", "code": 1})
     return headers_service
 
 
