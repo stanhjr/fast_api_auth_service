@@ -7,7 +7,7 @@ from fastapi import (
     Request,
 )
 from fastapi.encoders import jsonable_encoder
-from fastapi.openapi.models import Response
+
 from fastapi.responses import StreamingResponse
 from httpx import AsyncClient
 from prometheus_fastapi_instrumentator import Instrumentator
