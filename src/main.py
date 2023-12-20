@@ -129,7 +129,7 @@ async def _reverse_proxy(request: Request):
     bandl_id = headers_service.get_bandl_id()
     attempts_numbers = await redis_service.get_attempts_number(bandl_id=bandl_id)
     json_data = await request.json()
-    if json_data.get("stream") is not False:
+    if json_data.get("stream") is True:
         raise HTTPException(status_code=403, detail={"message": "stream type is not supported", "code": 10})
     content = await request.body()
 
