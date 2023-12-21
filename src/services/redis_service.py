@@ -17,6 +17,7 @@ class RedisService:
     KASPER_API_KEY = os.getenv("KASPER_API_KEY", "")
     PROMPTS_API_KEY = os.getenv("PROMPTS_API_KEY", "")
     PIC_ANSWER_API_KEY = os.getenv("PIC_ANSWER_API_KEY", "")
+    EMAIL_API_KEY = os.getenv("EMAIL_API_KEY", "")
     CHAT_GPT_MAIN_API_KEYS = set(os.getenv("CHAT_GPT_MAIN_API_KEYS").split(","))
 
     def __init__(self):
@@ -94,6 +95,7 @@ class RedisService:
             "casper.app.com": self.KASPER_API_KEY,
             "com.prompt.promptAI": self.PROMPTS_API_KEY,
             "com.aiChat.picAnswerAI": self.PIC_ANSWER_API_KEY,
+            "email.assistant.app.com": self.EMAIL_API_KEY,
         }
 
         expired_token_set = await self._get_expired_api_key_set()
